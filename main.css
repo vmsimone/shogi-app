@@ -23,6 +23,7 @@
 
 .piece {
     font-size: 42px;
+    font-family: "Meiryo", "MS PGothic", "sans-serif";
     text-align: center;
 }
 
@@ -37,9 +38,9 @@
     top: 15px;
     left: 10px;
     
-    -webkit-box-shadow: 0px 5px 0px brown;
-    -moz-box-shadow: 0px 5px 0px brown;
-    box-shadow: 0px 5px 0px brown;
+    -webkit-box-shadow: 0px 6px 0px brown;
+    -moz-box-shadow: 0px 6px 0px brown;
+    box-shadow: 0px 6px 0px brown;
 }
 
 .piece:before {
@@ -52,6 +53,43 @@
 
     border-style: solid;
     border-color: transparent transparent beige;
+
+    position: absolute;
+    top: -13px;
+    left: 0;
+}
+
+.white.piece {
+    transform: rotate(180deg);
+    top: 5px;
+
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+}
+
+.shadow {
+    transform: rotate(180deg);
+    background: brown;
+
+    width: 60px;
+    height: 6px;
+
+    position: absolute;
+    top: 70px;
+    left: 15px;
+}
+
+.shadow:before {
+    content: "";
+    height: 0;
+    width: 0;
+    border-left: 30px;
+    border-bottom: 10px;
+    border-right: 30px;
+
+    border-style: solid;
+    border-color: transparent transparent brown;
 
     position: absolute;
     top: -13px;
