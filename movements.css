@@ -2,12 +2,12 @@
     background: cyan;
 }
 
-.possible-move {
-    background: magenta;
-}
-
 .previous-move {
     background: yellow;
+}
+
+.possible-move {
+    background: magenta;
 }
 
 .flipped {
