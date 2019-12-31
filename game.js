@@ -72,6 +72,12 @@ function findValidMoves(square) {
         case '歩':
             validMoves = fuMoves(thisColor, square);
             break;
+        case '香':
+            validMoves = kyouMoves(thisColor, square);
+            break;
+        case '桂':
+            validMoves = keiMoves(thisColor, square);
+            break;
         case ('王' || '玉'):
             validMoves = ouMoves(square);
             break;

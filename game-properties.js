@@ -141,11 +141,31 @@ function hiMoves(color, coordinates) {
 function kyouMoves(color, coordinates) {
     coordinates = parseInt(coordinates);
     if(color === 'black') {
-        return [
-        ];
+        let i = coordinates - 1;
+        let possibleSquares = [];
+
+        while(i > (Math.ceil((coordinates - 9) / 10) * 10)) {
+            possibleSquares.push(i);
+            //prevents leaping over pieces
+            if(BOARD_STATE[i].piece) {
+                break;
+            }
+            i--
+        }
+        return possibleSquares;
     } else {
-        return [
-        ];
+        let i = coordinates + 1;
+        let possibleSquares = [];
+
+        while(i < (Math.floor((coordinates + 9) / 10) * 10)) {
+            possibleSquares.push(i);
+            //prevents leaping over pieces
+            if(BOARD_STATE[i].piece) {
+                break;
+            }
+            i++
+        }
+        return possibleSquares;
     }
 }
 
@@ -153,9 +173,13 @@ function keiMoves(color, coordinates) {
     coordinates = parseInt(coordinates);
     if(color === 'black') {
         return [
+            coordinates - 12,
+            coordinates + 8
         ];
     } else {
         return [
+            coordinates + 12,
+            coordinates - 8
         ];
     }
 }
