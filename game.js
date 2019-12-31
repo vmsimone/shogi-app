@@ -72,17 +72,17 @@ function findValidMoves(square) {
         case '歩':
             validMoves = fuMoves(thisColor, square);
             break;
+        case '角':
+            validMoves = kakuMoves(square);
+            break;
+        case '飛':
+            validMoves = hiMoves(square);
+            break;
         case '香':
             validMoves = kyouMoves(thisColor, square);
             break;
         case '桂':
             validMoves = keiMoves(thisColor, square);
-            break;
-        case '角':
-            validMoves = kakuMoves(thisColor, square);
-            break;
-        case '飛':
-            validMoves = hiMoves(thisColor, square);
             break;
         case '銀':
             validMoves = ginMoves(thisColor, square);

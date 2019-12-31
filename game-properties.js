@@ -101,50 +101,125 @@ up-left = n + 9
 up-right = n - 11
 down-left = n + 11
 down-right = n - 9
+
+loops are designed to stop at edge of board, i.e. < 11, multiples of 10, or > 99
 */ 
 
+// function sumStrings(a, b) {
+//     return parseInt(a) + parseInt(b);
+// }
+
+// function sumCoordinates(coordinates) {
+//     return coordinates.split('').reduce(sumStrings);
+// }
+
 function fuMoves(color, coordinates) {
-    coordinates = parseInt(coordinates);
+    let origin = parseInt(coordinates);
     if(color === 'black') {
         return [
-            coordinates - 1
+            origin - 1
         ];
     } else {
         return [
-            coordinates + 1
+            origin + 1
         ];
     }
 }
 
-function kakuMoves(color, coordinates) {
-    coordinates = parseInt(coordinates);
-    if(color === 'black') {
-        return [
-        ];
-    } else {
-        return [
-        ];
+function kakuMoves(coordinates) {
+    let origin = parseInt(coordinates);
+
+    let ul = origin + 9, ur = origin - 11;
+    let dl = origin + 11, dr = origin - 9;
+    let possibleSquares = [];
+    while(ul % 10 !== 0 && ul < 99) {
+        possibleSquares.push(ul);
+        //prevents leaping over pieces
+        if(BOARD_STATE[ul].piece) {
+            break;
+        }
+        ul += 9
     }
+    while(ur > 10) {
+        possibleSquares.push(ur);
+        //prevents leaping over pieces
+        if(BOARD_STATE[ur].piece) {
+            break;
+        }
+        ur -= 11
+    }
+    while(dl % 10 !== 0 && dl < 99) {
+        possibleSquares.push(dl);
+        //prevents leaping over pieces
+        if(BOARD_STATE[dl].piece) {
+            break;
+        }
+        dl += 11
+    }
+    while(dr > 10) {
+        possibleSquares.push(dr);
+        //prevents leaping over pieces
+        if(BOARD_STATE[dr].piece) {
+            break;
+        }
+        dr -= 9
+    }
+    //more loops
+    return possibleSquares;
 }
 
-function hiMoves(color, coordinates) {
-    coordinates = parseInt(coordinates);
-    if(color === 'black') {
-        return [
-        ];
-    } else {
-        return [
-        ];
+function hiMoves(coordinates) {
+    let origin = parseInt(coordinates);
+
+    let u = origin - 1, d = origin + 1;
+    let l = origin + 10, r = origin - 10;
+    let possibleSquares = [];
+
+    while(u % 10 !== 0) {
+        possibleSquares.push(u);
+        //prevents leaping over pieces
+        if(BOARD_STATE[u].piece) {
+            break;
+        }
+        u--
     }
+    while(d % 10 !== 0) {
+        possibleSquares.push(d);
+        //prevents leaping over pieces
+        if(BOARD_STATE[d].piece) {
+            break;
+        }
+        d++
+    }
+    while(l < 99) {
+        possibleSquares.push(l);
+        //prevents leaping over pieces
+        if(BOARD_STATE[l].piece) {
+            break;
+        }
+        l += 10
+    }
+    while(r > 10) {
+        possibleSquares.push(r);
+        //prevents leaping over pieces
+        if(BOARD_STATE[r].piece) {
+            break;
+        }
+        r -= 10
+    }
+    
+    //more loops
+    return possibleSquares;
 }
 
 function kyouMoves(color, coordinates) {
-    coordinates = parseInt(coordinates);
+    let origin = parseInt(coordinates);
     if(color === 'black') {
-        let i = coordinates - 1;
+        let i = origin - 1;
         let possibleSquares = [];
 
-        while(i > (Math.ceil((coordinates - 9) / 10) * 10)) {
+        //alternatively, while(i > (Math.ceil((origin - 9) / 10) * 10))
+        while(i % 10 !== 0) {
             possibleSquares.push(i);
             //prevents leaping over pieces
             if(BOARD_STATE[i].piece) {
@@ -154,10 +229,11 @@ function kyouMoves(color, coordinates) {
         }
         return possibleSquares;
     } else {
-        let i = coordinates + 1;
+        let i = origin + 1;
         let possibleSquares = [];
 
-        while(i < (Math.floor((coordinates + 9) / 10) * 10)) {
+        //alternatively, while(i < (Math.floor((origin + 9) / 10) * 10))
+        while(i % 10 !== 0) {
             possibleSquares.push(i);
             //prevents leaping over pieces
             if(BOARD_STATE[i].piece) {
@@ -170,74 +246,74 @@ function kyouMoves(color, coordinates) {
 }
 
 function keiMoves(color, coordinates) {
-    coordinates = parseInt(coordinates);
+    let origin = parseInt(coordinates);
     if(color === 'black') {
         return [
-            coordinates - 12,
-            coordinates + 8
+            origin - 12,
+            origin + 8
         ];
     } else {
         return [
-            coordinates + 12,
-            coordinates - 8
+            origin + 12,
+            origin - 8
         ];
     }
 }
 
 function ginMoves(color, coordinates) {
-    coordinates = parseInt(coordinates);
+    let origin = parseInt(coordinates);
     if(color === 'black') {
         return [
-            coordinates - 1,
-            coordinates - 11,
-            coordinates + 11,
-            coordinates - 9,
-            coordinates + 9
+            origin - 1,
+            origin - 11,
+            origin + 11,
+            origin - 9,
+            origin + 9
         ];
     } else {
         return [
-            coordinates + 1,
-            coordinates - 11,
-            coordinates + 11,
-            coordinates - 9,
-            coordinates + 9
+            origin + 1,
+            origin - 11,
+            origin + 11,
+            origin - 9,
+            origin + 9
         ];
     }
 }
 
 function kinMoves(color, coordinates) {
-    coordinates = parseInt(coordinates);
+    let origin = parseInt(coordinates);
     if(color === 'black') {
         return [
-            coordinates - 1,
-            coordinates + 1,
-            coordinates - 10,
-            coordinates + 10,
-            coordinates - 11,
-            coordinates + 9
+            origin - 1,
+            origin + 1,
+            origin - 10,
+            origin + 10,
+            origin - 11,
+            origin + 9
         ];
     } else {
         return [
-            coordinates - 1,
-            coordinates + 1,
-            coordinates - 10,
-            coordinates + 10,
-            coordinates + 11,
-            coordinates - 9
+            origin - 1,
+            origin + 1,
+            origin - 10,
+            origin + 10,
+            origin + 11,
+            origin - 9
         ];
     }
 }
 
 function ouMoves(coordinates) {
-    coordinates = parseInt(coordinates);
+    let origin = parseInt(coordinates);
     return [
-        coordinates - 1,
-        coordinates + 1,
-        coordinates - 10,
-        coordinates + 10,
-        coordinates - 11,
-        coordinates + 11,
-        coordinates - 9,
-        coordinates + 9
+        origin - 1,
+        origin + 1,
+        origin - 10,
+        origin + 10,
+        origin - 11,
+        origin + 11,
+        origin - 9,
+        origin + 9
     ]
 }
