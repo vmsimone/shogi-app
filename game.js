@@ -78,14 +78,20 @@ function findValidMoves(square) {
         case '桂':
             validMoves = keiMoves(thisColor, square);
             break;
-        case ('王' || '玉'):
-            validMoves = ouMoves(square);
+        case '角':
+            validMoves = kakuMoves(thisColor, square);
+            break;
+        case '飛':
+            validMoves = hiMoves(thisColor, square);
             break;
         case '銀':
             validMoves = ginMoves(thisColor, square);
             break;
         case ('金' || 'と' || '全'):
             validMoves = kinMoves(thisColor, square);
+            break;
+        case ('王' || '玉'):
+            validMoves = ouMoves(square);
             break;
     }
 
@@ -100,6 +106,9 @@ function findValidMoves(square) {
 
 function readyMove(square) {
     const validMoves = findValidMoves(square);
+    validMoves.forEach(move => {
+        $(`#${move}`).addClass('possible-move');
+    });
     if (validMoves) {
         listenMove(square, validMoves);
     } else {
@@ -112,9 +121,12 @@ function movePiece(oldSquare, newSquare) {
 
     let thisPiece = BOARD_STATE[oldSquare].piece;
     let thisColor = BOARD_STATE[oldSquare].color;
+
+    $('.previous-move').removeClass('previous-move');
+    $('.possible-move').removeClass('possible-move');
     
     $(`#${oldSquare}`).removeClass('selected');
-    $(`#${newSquare}`).addClass('selected');
+    $(`#${newSquare}`).addClass('previous-move');
     
     if(BOARD_STATE[newSquare].piece) {
         BOARD_STATE[`${thisColor}-captures`].push(BOARD_STATE[newSquare].piece);
@@ -132,6 +144,7 @@ function movePiece(oldSquare, newSquare) {
 
 function selectPiece(pieceSelector) {
     $('.square').removeClass('selected');
+    $('.possible-move').removeClass('possible-move');
 
     const location = $(pieceSelector).parent();
     const square = $(pieceSelector).parent().attr('id');

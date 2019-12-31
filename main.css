@@ -122,7 +122,3 @@
     left: 50px;
     margin: -30px;
 }
-
-.flipped {
-    transform: rotate(180deg);
-}
