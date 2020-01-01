@@ -13,3 +13,7 @@
 .flipped {
     transform: rotate(180deg);
 }
+
+.promoted {
+    color: red;
+}

@@ -84,11 +84,38 @@ const BOARD_STATE = {
     "white-captures": []
 }
 
+const PROMOTED_PIECES = ['と', '馬', '龍', '杏', '圭', '全'];
+
 function updateBoard(square, piece, color) {
     BOARD_STATE[square] = { 
         "piece": piece,
         "color": color
     };
+}
+
+function movementHandler(piece, color, square) {
+    switch(piece) {
+        case '歩':
+            return fuMoves(color, square);
+        case '角':
+            return kakuMoves(square);
+        case '飛':
+            return hiMoves(square);
+        case '香':
+            return kyouMoves(color, square);
+        case '桂':
+            return keiMoves(color, square);
+        case '銀':
+            return ginMoves(color, square);
+        case ('金' || 'と' || '杏' || '圭' || '全'):
+            return kinMoves(color, square);
+        case ('王' || '玉'):
+            return ouMoves(square);
+        case '馬':
+            return umaMoves(square);
+        case '龍':
+            return ryuuMoves(square);
+    }
 }
 
 /*
@@ -168,6 +195,19 @@ function kakuMoves(coordinates) {
     return possibleSquares;
 }
 
+function umaMoves(coordinates) {
+    let origin = parseInt(coordinates);
+    let possibleSquares = kakuMoves(coordinates);
+    
+    possibleSquares.push(
+        origin - 1,
+        origin + 1,
+        origin - 10,
+        origin + 10
+    );
+    return possibleSquares;
+}
+
 function hiMoves(coordinates) {
     let origin = parseInt(coordinates);
 
@@ -209,6 +249,19 @@ function hiMoves(coordinates) {
     }
     
     //more loops
+    return possibleSquares;
+}
+
+function ryuuMoves(coordinates) {
+    let origin = parseInt(coordinates);
+    let possibleSquares = hiMoves(coordinates);
+    
+    possibleSquares.push(   
+        origin - 11,
+        origin + 11,
+        origin - 9,
+        origin + 9
+    );
     return possibleSquares;
 }
 
@@ -316,4 +369,61 @@ function ouMoves(coordinates) {
         origin - 9,
         origin + 9
     ]
+}
+
+function isInPromotionZone(position, color) {
+    if(color === 'black') {
+        return (
+            position % 10 === 1 || position % 10 === 2 || position % 10 === 3
+        )
+    } else {
+        return (
+            position % 10 === 7 || position % 10 === 8 || position % 10 === 9
+        )
+    }
+}
+
+function promote(thisPiece, position) {
+    const promoteTo = promotionHandler(thisPiece);
+    console.log(promoteTo);
+
+    BOARD_STATE[position].piece = promoteTo;
+}
+
+function promotionHandler(piece) {
+    switch(piece) {
+        case '歩':
+            return 'と';
+        case '角':
+            return '馬';
+        case '飛':
+            return '龍';
+        case '香':
+            return '杏';
+        case '桂':
+            return '圭';
+        case '銀':
+            return '全';
+        default:
+            return piece;
+    }
+}
+
+function capturePromotedPiece(piece) {
+    switch(piece) {
+        case 'と':
+            return '歩';
+        case '馬':
+            return '角';
+        case '龍':
+            return '飛';
+        case '杏':
+            return '香';
+        case '圭':
+            return '桂';
+        case '全':
+            return '銀';
+        default:
+            return piece;
+    }
 }

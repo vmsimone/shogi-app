@@ -45,6 +45,9 @@ function updateHTML() {
                     <b>${thisSquare.piece}</b>
                 </div>`
             );
+            if(PROMOTED_PIECES.indexOf(thisSquare.piece) !== -1) {
+                $(`#${square}`).children().addClass('promoted');
+            }
         } else if (square == 'black-captures' || square == 'white-captures') {
             $(`.${square}`).html('');
             thisSquare.forEach(piece => {
@@ -68,32 +71,7 @@ function findValidMoves(square) {
     const thisPiece = BOARD_STATE[square].piece;
     const thisColor = BOARD_STATE[square].color;
 
-    switch(thisPiece) {
-        case '歩':
-            validMoves = fuMoves(thisColor, square);
-            break;
-        case '角':
-            validMoves = kakuMoves(square);
-            break;
-        case '飛':
-            validMoves = hiMoves(square);
-            break;
-        case '香':
-            validMoves = kyouMoves(thisColor, square);
-            break;
-        case '桂':
-            validMoves = keiMoves(thisColor, square);
-            break;
-        case '銀':
-            validMoves = ginMoves(thisColor, square);
-            break;
-        case ('金' || 'と' || '全'):
-            validMoves = kinMoves(thisColor, square);
-            break;
-        case ('王' || '玉'):
-            validMoves = ouMoves(square);
-            break;
-    }
+    validMoves = movementHandler(thisPiece, thisColor, square);
 
     //make sure pieces are not blocked by own pieces or moving off the board
     validMoves.forEach(move => {
@@ -129,17 +107,28 @@ function movePiece(oldSquare, newSquare) {
     $(`#${newSquare}`).addClass('previous-move');
     
     if(BOARD_STATE[newSquare].piece) {
-        BOARD_STATE[`${thisColor}-captures`].push(BOARD_STATE[newSquare].piece);
+        capturePiece(BOARD_STATE[newSquare].piece, thisColor);
     }
 
     BOARD_STATE[oldSquare] = '';
     updateBoard(newSquare, thisPiece, thisColor);
+
+    if(isInPromotionZone(newSquare, thisColor)) {
+        promote(thisPiece, newSquare);
+    }
 
     updateHTML();
 
     thisColor === 'black' ? listenWhite() : listenBlack();
     
     //$('main').toggleClass('flipped');
+}
+
+function capturePiece(piece, color) {
+    if(PROMOTED_PIECES.indexOf(piece) !== -1) {
+        piece = capturePromotedPiece(piece);
+    }
+    BOARD_STATE[`${color}-captures`].push(piece);
 }
 
 function selectPiece(pieceSelector) {
@@ -155,6 +144,7 @@ function selectPiece(pieceSelector) {
 }
 
 function listenMove(square, validMoves) {
+    $('.square').off('click');
     $('.square').on('click', (e) => {
         const clickedSquare = e.currentTarget.id;
         const validity = validMoves.indexOf(parseInt(clickedSquare));
