@@ -117,6 +117,10 @@ function movePiece(oldSquare, newSquare) {
         promote(thisPiece, newSquare);
     }
 
+    if(kingIsInCheck(thisColor, thisPiece, newSquare)) {
+        check();
+    }
+
     updateHTML();
 
     thisColor === 'black' ? listenWhite() : listenBlack();
@@ -143,6 +147,18 @@ function selectPiece(pieceSelector) {
     readyMove(square);
 }
 
+function check() {
+    $('body').append(`<div class="prompt">王手</div>`);
+    $('.prompt').fadeIn('fast');
+    $('.prompt').delay(1000).fadeOut('fast');
+}
+
+function confirmPromotion() {
+    $('body').append(`<div class="prompt">成りますか？</div>`);
+    $('.prompt').fadeIn('fast');
+}
+
+//listeners
 function listenMove(square, validMoves) {
     $('.square').off('click');
     $('.square').on('click', (e) => {

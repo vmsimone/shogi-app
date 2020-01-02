@@ -93,31 +93,6 @@ function updateBoard(square, piece, color) {
     };
 }
 
-function movementHandler(piece, color, square) {
-    switch(piece) {
-        case '歩':
-            return fuMoves(color, square);
-        case '角':
-            return kakuMoves(square);
-        case '飛':
-            return hiMoves(square);
-        case '香':
-            return kyouMoves(color, square);
-        case '桂':
-            return keiMoves(color, square);
-        case '銀':
-            return ginMoves(color, square);
-        case ('金' || 'と' || '杏' || '圭' || '全'):
-            return kinMoves(color, square);
-        case ('王' || '玉'):
-            return ouMoves(square);
-        case '馬':
-            return umaMoves(square);
-        case '龍':
-            return ryuuMoves(square);
-    }
-}
-
 /*
 MOVEMENT KEY:
 up = n - 1
@@ -371,6 +346,28 @@ function ouMoves(coordinates) {
     ]
 }
 
+function findKingPosition(kingColor) {
+    const allBoardSquares = Object.keys(BOARD_STATE);
+    for(i=0; i<=allBoardSquares.length; i++) {
+        let thisSquare = allBoardSquares[i];
+        if(BOARD_STATE[thisSquare].piece === '王' && BOARD_STATE[thisSquare].color === kingColor) {
+            return thisSquare;
+        }
+    }
+}
+
+function kingIsInCheck(lastMovedColor, lastMovedPiece, currentPosition) {
+    const nextMoves = movementHandler(lastMovedPiece, lastMovedColor, currentPosition);
+    const kingColor = (lastMovedColor = 'black' ? 'white' : 'black');
+    const kingPosition = parseInt(findKingPosition(kingColor));
+
+    if(nextMoves.indexOf(kingPosition) !== -1) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 function isInPromotionZone(position, color) {
     if(color === 'black') {
         return (
@@ -385,9 +382,38 @@ function isInPromotionZone(position, color) {
 
 function promote(thisPiece, position) {
     const promoteTo = promotionHandler(thisPiece);
-    console.log(promoteTo);
 
     BOARD_STATE[position].piece = promoteTo;
+}
+
+function movementHandler(piece, color, square) {
+    switch(piece) {
+        case '歩':
+            return fuMoves(color, square);
+        case '角':
+            return kakuMoves(square);
+        case '飛':
+            return hiMoves(square);
+        case '香':
+            return kyouMoves(color, square);
+        case '桂':
+            return keiMoves(color, square);
+        case '銀':
+            return ginMoves(color, square);
+        case '金': 
+        case 'と': 
+        case '杏': 
+        case '圭': 
+        case '全':
+            return kinMoves(color, square);
+        case '王': 
+        case '玉':
+            return ouMoves(square);
+        case '馬':
+            return umaMoves(square);
+        case '龍':
+            return ryuuMoves(square);
+    }
 }
 
 function promotionHandler(piece) {
