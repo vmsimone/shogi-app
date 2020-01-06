@@ -84,39 +84,248 @@ const BOARD_STATE = {
     "white-captures": []
 }
 
-const PROMOTED_PIECES = ['と', '馬', '龍', '杏', '圭', '全'];
-
-function updateBoard(square, piece, color) {
-    BOARD_STATE[square] = { 
-        "piece": piece,
-        "color": color
-    };
+class Piece {
+    constructor(name, startingPositionsBlack, startingPositionsWhite, promotion, moves) {
+        this.displayName = name;
+        this.startingPositionsBlack = startingPositionsBlack;
+        this.startingPositionsWhite = startingPositionsWhite;
+        this.promotion = promotion;
+        this.validMoves = moves;
+    }
 }
 
-/*
-MOVEMENT KEY:
-up = n - 1
-down = n + 1
-left = n + 10
-right = n - 10
-up-left = n + 9
-up-right = n - 11
-down-left = n + 11
-down-right = n - 9
+//fu, "pawn"
+const 歩 = new Piece(
+    "歩", 
+    ["17", "27", "37", "47", "57", "67", "77", "87", "97"], 
+    ["13", "23", "33", "43", "53", "63", "73", "83", "93"],
+    "と",
+    function(position, color) {
+        let origin = parseInt(position);
 
+        if(color === 'black') {
+            return [ moveUp(origin) ];
+        } else {
+            return [ moveDown(origin) ];
+        }
+    }
+);
+
+console.log(歩.displayName)
+
+const 角 = new Piece(
+    "角", 
+    ["88"], 
+    ["22"],
+    "と",
+    null
+);
+
+const PIECES = [
+    {
+        "displayName": "歩",
+        "startingPositionsBlack": ["17", "27", "37", "47", "57", "67", "77", "87", "97"],
+        "startingPositionsWhite": ["13", "23", "33", "43", "53", "63", "73", "83", "93"],
+        "validMoves": []
+    },
+    {
+        "displayName": "角",
+        "startingPositionsBlack": ["88"],
+        "startingPositionsWhite": ["22"]
+    },
+    {
+        "displayName": "飛",
+        "startingPositionsBlack": ["28"],
+        "startingPositionsWhite": ["82"]
+    },
+    {
+        "displayName": "香",
+        "startingPositionsBlack": ["99", "19"],
+        "startingPositionsWhite": ["91", "11"]
+    },
+    {
+        "displayName": "桂",
+        "startingPositionsBlack": ["89", "29"],
+        "startingPositionsWhite": ["81", "21"]
+    },
+    {
+        "displayName": "銀",
+        "startingPositionsBlack": ["79", "39"],
+        "startingPositionsWhite": ["71", "31"]
+    },
+    {
+        "displayName": "金",
+        "startingPositionsBlack": ["69", "49"],
+        "startingPositionsWhite": ["61", "41"]
+    },
+    {
+        "displayName": "王",
+        "startingPositionsBlack": ["59"],
+        "startingPositionsWhite": ["51"]
+    }
+];
+
+const PROMOTED_PIECES = ['と', '馬', '龍', '杏', '圭', '全'];
+
+/*
 loops are designed to stop at edge of board, i.e. < 11, multiples of 10, or > 99
 */ 
 
-// function sumStrings(a, b) {
-//     return parseInt(a) + parseInt(b);
-// }
 
-// function sumCoordinates(coordinates) {
-//     return coordinates.split('').reduce(sumStrings);
-// }
+function moveUp(currentPosition) {
+    return currentPosition - 1;
+}
 
-function fuMoves(color, coordinates) {
-    let origin = parseInt(coordinates);
+function moveDown(currentPosition) {
+    return currentPosition + 1;
+}
+
+function moveLeft(currentPosition) {
+    return currentPosition + 10;
+}
+
+function moveRight(currentPosition) {
+    return currentPosition - 10;
+}
+
+function moveUpLeft(currentPosition) {
+    return currentPosition + 9;
+}
+
+function moveUpRight(currentPosition) {
+    return currentPosition - 11;
+}
+
+function moveDownLeft(currentPosition) {
+    return currentPosition + 11;
+}
+
+function moveDownRight(currentPosition) {
+    return currentPosition - 9;
+}
+
+function slideUp(currentPosition) {
+    let u = moveUp(currentPosition);
+    const validMoves = [];
+
+    while(u % 10 !== 0) {
+        validMoves.push(u);
+        //prevents leaping over pieces
+        if(BOARD_STATE[u].piece) {
+            break;
+        }
+        u = moveUp(u);
+    }
+    return validMoves;
+}
+
+function slideDown(currentPosition) {
+    let d = moveDown(currentPosition);
+    const validMoves = [];
+
+    while(d % 10 !== 0) {
+        validMoves.push(d);
+        //prevents leaping over pieces
+        if(BOARD_STATE[d].piece) {
+            break;
+        }
+        d = moveDown(d);
+    }
+    return validMoves;
+}
+
+function slideLeft(currentPosition) {
+    let l = moveLeft(currentPosition);
+    const validMoves = [];
+
+    while(l < 100) {
+        validMoves.push(l);
+        //prevents leaping over pieces
+        if(BOARD_STATE[l].piece) {
+            break;
+        }
+        l = moveLeft(l);
+    }
+    return validMoves;
+}
+
+function slideRight(currentPosition) {
+    let r = moveRight(currentPosition);
+    const validMoves = [];
+
+    while(r > 10) {
+        validMoves.push(r);
+        //prevents leaping over pieces
+        if(BOARD_STATE[r].piece) {
+            break;
+        }
+        r = moveRight(r);
+    }
+    return validMoves;
+}
+
+function slideUpLeft(currentPosition) {
+    let ul = moveUpLeft(currentPosition);
+    const validMoves = [];
+
+    while(ul % 10 !== 0 && ul < 99) {
+        validMoves.push(ul);
+        //prevents leaping over pieces
+        if(BOARD_STATE[ul].piece) {
+            break;
+        }
+        ul = moveUpLeft(ul);
+    }
+    return validMoves;
+}
+
+function slideUpRight(currentPosition) {
+    let ur = moveUpRight(currentPosition);
+    const validMoves = [];
+
+    while(ur % 10 !== 0 && ur > 10) {
+        validMoves.push(ur);
+        //prevents leaping over pieces
+        if(BOARD_STATE[ur].piece) {
+            break;
+        }
+        ur = moveUpRight(ur);
+    }
+    return validMoves;
+}
+
+function slideDownLeft(currentPosition) {
+    let dl = moveDownLeft(currentPosition);
+    const validMoves = [];
+
+    while(dl % 10 !== 0 && dl < 100) {
+        validMoves.push(dl);
+        //prevents leaping over pieces
+        if(BOARD_STATE[dl].piece) {
+            break;
+        }
+        dl = moveDownLeft(dl);
+    }
+    return validMoves;
+}
+
+function slideDownRight(currentPosition) {
+    let dr = moveDownRight(currentPosition);
+    const validMoves = [];
+
+    while(dr % 10 !== 0 && dr > 10) {
+        validMoves.push(dr);
+        //prevents leaping over pieces
+        if(BOARD_STATE[dr].piece) {
+            break;
+        }
+        dr = moveDownRight(dr);
+    }
+    return validMoves;
+}
+
+function fuMoves(color, position) {
+    const origin = parseInt(position);
     if(color === 'black') {
         return [
             origin - 1
@@ -128,159 +337,74 @@ function fuMoves(color, coordinates) {
     }
 }
 
-function kakuMoves(coordinates) {
-    let origin = parseInt(coordinates);
+function kakuMoves(position) {
+    const origin = parseInt(position);
 
-    let ul = origin + 9, ur = origin - 11;
-    let dl = origin + 11, dr = origin - 9;
-    let possibleSquares = [];
-    while(ul % 10 !== 0 && ul < 99) {
-        possibleSquares.push(ul);
-        //prevents leaping over pieces
-        if(BOARD_STATE[ul].piece) {
-            break;
-        }
-        ul += 9
-    }
-    while(ur > 10) {
-        possibleSquares.push(ur);
-        //prevents leaping over pieces
-        if(BOARD_STATE[ur].piece) {
-            break;
-        }
-        ur -= 11
-    }
-    while(dl % 10 !== 0 && dl < 99) {
-        possibleSquares.push(dl);
-        //prevents leaping over pieces
-        if(BOARD_STATE[dl].piece) {
-            break;
-        }
-        dl += 11
-    }
-    while(dr > 10) {
-        possibleSquares.push(dr);
-        //prevents leaping over pieces
-        if(BOARD_STATE[dr].piece) {
-            break;
-        }
-        dr -= 9
-    }
-    //more loops
-    return possibleSquares;
+    const slideUL = slideUpLeft(origin), slideUR = slideUpRight(origin);
+    const slideDL = slideDownLeft(origin), slideDR = slideDownRight(origin);
+
+    //slideUL chosen arbitrarily
+    const validMoves = slideUL.concat(slideUR, slideDL, slideDR);
+    return validMoves;
 }
 
-function umaMoves(coordinates) {
-    let origin = parseInt(coordinates);
-    let possibleSquares = kakuMoves(coordinates);
+function umaMoves(position) {
+    const origin = parseInt(position);
+    const validMoves = kakuMoves(position);
     
-    possibleSquares.push(
-        origin - 1,
-        origin + 1,
-        origin - 10,
-        origin + 10
+    validMoves.push(
+        moveUp(origin),
+        moveDown(origin),
+        moveLeft(origin),
+        moveRight(origin)
     );
-    return possibleSquares;
+    return validMoves;
 }
 
-function hiMoves(coordinates) {
-    let origin = parseInt(coordinates);
+function hiMoves(position) {
+    const origin = parseInt(position);
 
-    let u = origin - 1, d = origin + 1;
-    let l = origin + 10, r = origin - 10;
-    let possibleSquares = [];
+    const slideU = slideUp(origin), slideD = slideDown(origin);
+    const slideL = slideLeft(origin), slideR = slideRight(origin);
 
-    while(u % 10 !== 0) {
-        possibleSquares.push(u);
-        //prevents leaping over pieces
-        if(BOARD_STATE[u].piece) {
-            break;
-        }
-        u--
-    }
-    while(d % 10 !== 0) {
-        possibleSquares.push(d);
-        //prevents leaping over pieces
-        if(BOARD_STATE[d].piece) {
-            break;
-        }
-        d++
-    }
-    while(l < 99) {
-        possibleSquares.push(l);
-        //prevents leaping over pieces
-        if(BOARD_STATE[l].piece) {
-            break;
-        }
-        l += 10
-    }
-    while(r > 10) {
-        possibleSquares.push(r);
-        //prevents leaping over pieces
-        if(BOARD_STATE[r].piece) {
-            break;
-        }
-        r -= 10
-    }
-    
-    //more loops
-    return possibleSquares;
+    //slideU chosen arbitrarily
+    const validMoves = slideU.concat(slideD, slideL, slideR);
+    return validMoves;
 }
 
-function ryuuMoves(coordinates) {
-    let origin = parseInt(coordinates);
-    let possibleSquares = hiMoves(coordinates);
+function ryuuMoves(position) {
+    const origin = parseInt(position);
+    const validMoves = hiMoves(position);
     
-    possibleSquares.push(   
-        origin - 11,
-        origin + 11,
-        origin - 9,
-        origin + 9
+    validMoves.push(
+        moveUpLeft(origin),
+        moveUpRight(origin),
+        moveDownLeft(origin),
+        moveDownRight(origin)
     );
-    return possibleSquares;
+    return validMoves;
 }
 
-function kyouMoves(color, coordinates) {
-    let origin = parseInt(coordinates);
+function kyouMoves(color, position) {
+    const origin = parseInt(position);
+
     if(color === 'black') {
-        let i = origin - 1;
-        let possibleSquares = [];
-
-        //alternatively, while(i > (Math.ceil((origin - 9) / 10) * 10))
-        while(i % 10 !== 0) {
-            possibleSquares.push(i);
-            //prevents leaping over pieces
-            if(BOARD_STATE[i].piece) {
-                break;
-            }
-            i--
-        }
-        return possibleSquares;
+        return slideUp(origin);
     } else {
-        let i = origin + 1;
-        let possibleSquares = [];
-
-        //alternatively, while(i < (Math.floor((origin + 9) / 10) * 10))
-        while(i % 10 !== 0) {
-            possibleSquares.push(i);
-            //prevents leaping over pieces
-            if(BOARD_STATE[i].piece) {
-                break;
-            }
-            i++
-        }
-        return possibleSquares;
+        return slideDown(origin);
     }
 }
 
-function keiMoves(color, coordinates) {
-    let origin = parseInt(coordinates);
+function keiMoves(color, position) {
+    let origin = parseInt(position);
     if(color === 'black') {
+        //equivalent to moving up, up, left or up, up, right
         return [
             origin - 12,
             origin + 8
         ];
     } else {
+        //equivalent to moving down, down, left or down, down, right
         return [
             origin + 12,
             origin - 8
@@ -288,61 +412,61 @@ function keiMoves(color, coordinates) {
     }
 }
 
-function ginMoves(color, coordinates) {
-    let origin = parseInt(coordinates);
+function ginMoves(color, position) {
+    let origin = parseInt(position);
     if(color === 'black') {
         return [
-            origin - 1,
-            origin - 11,
-            origin + 11,
-            origin - 9,
-            origin + 9
+            moveUp(origin),
+            moveUpLeft(origin),
+            moveUpRight(origin),
+            moveDownLeft(origin),
+            moveDownRight(origin)
         ];
     } else {
         return [
-            origin + 1,
-            origin - 11,
-            origin + 11,
-            origin - 9,
-            origin + 9
+            moveDown(origin),
+            moveDownLeft(origin),
+            moveDownRight(origin),
+            moveUpLeft(origin),
+            moveUpRight(origin)
         ];
     }
 }
 
-function kinMoves(color, coordinates) {
-    let origin = parseInt(coordinates);
+function kinMoves(color, position) {
+    let origin = parseInt(position);
     if(color === 'black') {
         return [
-            origin - 1,
-            origin + 1,
-            origin - 10,
-            origin + 10,
-            origin - 11,
-            origin + 9
+            moveUp(origin),
+            moveUpLeft(origin),
+            moveUpRight(origin),
+            moveDown(origin),
+            moveLeft(origin),
+            moveRight(origin)
         ];
     } else {
         return [
-            origin - 1,
-            origin + 1,
-            origin - 10,
-            origin + 10,
-            origin + 11,
-            origin - 9
+            moveUp(origin),
+            moveLeft(origin),
+            moveRight(origin),
+            moveDown(origin),
+            moveDownLeft(origin),
+            moveDownRight(origin)
         ];
     }
 }
 
-function ouMoves(coordinates) {
-    let origin = parseInt(coordinates);
+function ouMoves(position) {
+    let origin = parseInt(position);
     return [
-        origin - 1,
-        origin + 1,
-        origin - 10,
-        origin + 10,
-        origin - 11,
-        origin + 11,
-        origin - 9,
-        origin + 9
+        moveUp(origin),
+        moveDown(origin),
+        moveLeft(origin),
+        moveRight(origin),
+        moveUpLeft(origin),
+        moveUpRight(origin),
+        moveDownLeft(origin),
+        moveDownRight(origin)
     ]
 }
 

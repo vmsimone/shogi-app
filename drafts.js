@@ -106,3 +106,44 @@ function move() {
         </div>`
     );
 }
+
+function sumStrings(a, b) {
+    return parseInt(a) + parseInt(b);
+}
+
+function sumCoordinates(coordinates) {
+    return coordinates.split('').reduce(sumStrings);
+}
+
+function kyouMoves(color, coordinates) {
+    let origin = parseInt(coordinates);
+    if(color === 'black') {
+        let i = origin - 1;
+        let possibleSquares = [];
+
+        //alternatively, while(i > (Math.ceil((origin - 9) / 10) * 10))
+        while(i % 10 !== 0) {
+            possibleSquares.push(i);
+            //prevents leaping over pieces
+            if(BOARD_STATE[i].piece) {
+                break;
+            }
+            i--
+        }
+        return possibleSquares;
+    } else {
+        let i = origin + 1;
+        let possibleSquares = [];
+
+        //alternatively, while(i < (Math.floor((origin + 9) / 10) * 10))
+        while(i % 10 !== 0) {
+            possibleSquares.push(i);
+            //prevents leaping over pieces
+            if(BOARD_STATE[i].piece) {
+                break;
+            }
+            i++
+        }
+        return possibleSquares;
+    }
+}

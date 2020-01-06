@@ -1,67 +1,84 @@
+//see game-properties.js for globals
+
 function setBoard() {
-    for(i=1; i<=9; i++) {
-        updateBoard(`${i}3`, "歩", "white");
-        updateBoard(`${i}7`, "歩", "black");
-    }
-    updateBoard("59", "王", "black");
-    updateBoard("51", "王", "white");
-
-    updateBoard("88", "角", "black");
-    updateBoard("22", "角", "white");
-
-    updateBoard("28", "飛", "black");
-    updateBoard("82", "飛", "white");
-
-    updateBoard("99", "香", "black");
-    updateBoard("19", "香", "black");
-    updateBoard("91", "香", "white");
-    updateBoard("11", "香", "white");
-
-    updateBoard("89", "桂", "black");
-    updateBoard("29", "桂", "black");
-    updateBoard("81", "桂", "white");
-    updateBoard("21", "桂", "white");
-
-    updateBoard("79", "銀", "black");
-    updateBoard("39", "銀", "black");
-    updateBoard("71", "銀", "white");
-    updateBoard("31", "銀", "white");
-
-    updateBoard("69", "金", "black");
-    updateBoard("49", "金", "black");
-    updateBoard("61", "金", "white");
-    updateBoard("41", "金", "white");
+    PIECES.forEach(piece => {
+        piece.startingPositionsBlack.forEach(position => {
+            updateBoard(position, piece.displayName, "black");
+        });
+        piece.startingPositionsWhite.forEach(position => {
+            updateBoard(position, piece.displayName, "white");
+        });
+    });
 
     updateHTML();
 }
 
+function updateBoard(position, piece, color) {
+    BOARD_STATE[position] = { 
+        "piece": piece,
+        "color": color
+    };
+}
+
 function updateHTML() {
-    for (square in BOARD_STATE) {
-        let thisSquare = BOARD_STATE[square]
-        if (thisSquare.piece) {
-            $(`#${square}`).html(
-                `${thisSquare.color === 'white' ? '<div class="shadow"></div>' : ''}
-                <div class="${thisSquare.color} piece">
-                    <b>${thisSquare.piece}</b>
-                </div>`
-            );
-            if(PROMOTED_PIECES.indexOf(thisSquare.piece) !== -1) {
-                $(`#${square}`).children().addClass('promoted');
-            }
-        } else if (square == 'black-captures' || square == 'white-captures') {
-            $(`.${square}`).html('');
-            thisSquare.forEach(piece => {
-                $(`.${square}`).append(
-                    `${square === 'white-captures' ? '<div class="shadow"></div>' : ''}
-                    <div class="${square === 'white-captures' ? 'white' : 'black'} piece">
-                        <b>${piece}</b>
-                    </div>`
-                );
-            });
+    for (position in BOARD_STATE) {
+        const pieceExists = BOARD_STATE[position].piece;
+        const pieceIsCaptured = (position == 'black-captures' || position == 'white-captures');
+
+        if (pieceExists) {
+            displayPiece(position);
+            updatePromotedPiece(position);
+        } else if (pieceIsCaptured) {
+            displayCaptures(position);
         } else {
-            $(`#${square}`).html('');
+            $(`#${position}`).html('');
         }
     }
+}
+
+function displayPiece(position) {
+    const selector = $(`#${position}`);
+    const pieceColor = BOARD_STATE[position].color;
+    const pieceName = BOARD_STATE[position].piece;
+
+    selector.html(
+        `${pieceColor === 'white' ? '<div class="shadow"></div>' : ''}
+        <div class="${pieceColor} piece">
+            <b>${pieceName}</b>
+        </div>`
+    );
+}
+
+function updatePromotedPiece(position) {
+    const pieceSelector = $(`#${position}`).children();
+    const pieceIsPromoted = (PROMOTED_PIECES.indexOf(BOARD_STATE[position].piece) !== -1);
+
+    if(pieceIsPromoted) {
+        pieceSelector.addClass('promoted');
+    }
+}
+
+function displayCaptures(position) {
+    const captureArea = $(`.${position}`);
+
+    //clear capture area to avoid duplicates since we're appending
+    captureArea.html('');
+
+    BOARD_STATE[position].forEach(piece => {
+        captureArea.append(
+            `${position === 'white-captures' ? '<div class="shadow"></div>' : ''}
+            <div class="${position === 'white-captures' ? 'white' : 'black'} piece">
+                <b>${piece}</b>
+            </div>`
+        );
+    });
+}
+
+function readyMove(position) {
+    const validMoves = findValidMoves(position);
+    highlightValidMoves(validMoves);
+    
+    listenMove(position, validMoves);
 }
 
 function findValidMoves(square) {
@@ -82,16 +99,11 @@ function findValidMoves(square) {
     return possibleMoves;
 }
 
-function readyMove(square) {
-    const validMoves = findValidMoves(square);
-    validMoves.forEach(move => {
-        $(`#${move}`).addClass('possible-move');
+function highlightValidMoves(movesArray) {
+    movesArray.forEach(move => {
+        const thisSquare = $(`#${move}`);
+        thisSquare.addClass('possible-move');
     });
-    if (validMoves) {
-        listenMove(square, validMoves);
-    } else {
-        BOARD_STATE[square].color === 'black' ? listenWhite() : listenBlack();
-    }
 }
 
 function movePiece(oldSquare, newSquare) {
@@ -114,6 +126,10 @@ function movePiece(oldSquare, newSquare) {
     updateBoard(newSquare, thisPiece, thisColor);
 
     if(isInPromotionZone(newSquare, thisColor)) {
+        //need to clean these up first
+        //promptPromotion();
+        //listenPromotion(thisPiece, newSquare);
+        
         promote(thisPiece, newSquare);
     }
 
@@ -122,7 +138,6 @@ function movePiece(oldSquare, newSquare) {
     }
 
     updateHTML();
-
     thisColor === 'black' ? listenWhite() : listenBlack();
     
     //$('main').toggleClass('flipped');
@@ -153,8 +168,14 @@ function check() {
     $('.prompt').delay(1000).fadeOut('fast');
 }
 
-function confirmPromotion() {
-    $('body').append(`<div class="prompt">成りますか？</div>`);
+function promptPromotion() {
+    $('body').append(`
+    <div class="prompt">成りますか？
+        <br>
+        <button id="confirm">はい</button>
+        <button id="cancel">いいえ</button>
+    </div>
+    `);
     $('.prompt').fadeIn('fast');
 }
 
@@ -182,6 +203,28 @@ function listenWhite() {
     $('.black.piece').off('click');
     $('.white.piece').on('click', (e) => {
         selectPiece(e.currentTarget);
+    });
+}
+
+//needs work
+function listenPromotion(piece, square) {
+    $('#confirm').off('click');
+    $('#cancel').off('click');
+
+    $('#confirm').on('click', () => {
+        promote(piece, square);
+
+        if(kingIsInCheck(BOARD_STATE[square].color, piece, square)) {
+            check();
+        }
+
+        updateHTML();
+        BOARD_STATE[square].color === 'black' ? listenWhite() : listenBlack();
+
+        $('.prompt').fadeOut('instant');
+    });
+    $('#cancel').on('click', () => {
+        $('.prompt').fadeOut('instant');
     });
 }
 
