@@ -81,7 +81,8 @@ const BOARD_STATE = {
     "29": '',
     "19": '',
     "black-captures": [],
-    "white-captures": []
+    "white-captures": [],
+    "player-turn": "black"
 }
 
 class Piece {
@@ -94,16 +95,16 @@ class Piece {
     }
 }
 
-//fu, "pawn"
-const 歩 = new Piece(
+//fuhyou, "pawn"
+const 歩兵 = new Piece(
     "歩", 
     ["17", "27", "37", "47", "57", "67", "77", "87", "97"], 
     ["13", "23", "33", "43", "53", "63", "73", "83", "93"],
     "と",
-    function(position, color) {
+    function(position) {
         let origin = parseInt(position);
 
-        if(color === 'black') {
+        if(BOARD_STATE["player-turn"] === 'black') {
             return [ moveUp(origin) ];
         } else {
             return [ moveDown(origin) ];
@@ -111,66 +112,80 @@ const 歩 = new Piece(
     }
 );
 
-console.log(歩.displayName)
-
-const 角 = new Piece(
+//kakugyou, bishop
+const 角行 = new Piece(
     "角", 
     ["88"], 
     ["22"],
-    "と",
+    "馬",
+    function(position) {
+        const origin = parseInt(position);
+    
+        const slideUL = slideUpLeft(origin), slideUR = slideUpRight(origin);
+        const slideDL = slideDownLeft(origin), slideDR = slideDownRight(origin);
+    
+        //slideUL chosen arbitrarily
+        const validMoves = slideUL.concat(slideUR, slideDL, slideDR);
+        return validMoves;
+    }
+);
+
+//hisha, rook
+const 飛車 = new Piece(
+    "飛", 
+    ["28"], 
+    ["82"],
+    "龍",
     null
 );
 
-const PIECES = [
-    {
-        "displayName": "歩",
-        "startingPositionsBlack": ["17", "27", "37", "47", "57", "67", "77", "87", "97"],
-        "startingPositionsWhite": ["13", "23", "33", "43", "53", "63", "73", "83", "93"],
-        "validMoves": []
-    },
-    {
-        "displayName": "角",
-        "startingPositionsBlack": ["88"],
-        "startingPositionsWhite": ["22"]
-    },
-    {
-        "displayName": "飛",
-        "startingPositionsBlack": ["28"],
-        "startingPositionsWhite": ["82"]
-    },
-    {
-        "displayName": "香",
-        "startingPositionsBlack": ["99", "19"],
-        "startingPositionsWhite": ["91", "11"]
-    },
-    {
-        "displayName": "桂",
-        "startingPositionsBlack": ["89", "29"],
-        "startingPositionsWhite": ["81", "21"]
-    },
-    {
-        "displayName": "銀",
-        "startingPositionsBlack": ["79", "39"],
-        "startingPositionsWhite": ["71", "31"]
-    },
-    {
-        "displayName": "金",
-        "startingPositionsBlack": ["69", "49"],
-        "startingPositionsWhite": ["61", "41"]
-    },
-    {
-        "displayName": "王",
-        "startingPositionsBlack": ["59"],
-        "startingPositionsWhite": ["51"]
-    }
-];
+//kyousha, lance
+const 香車 = new Piece(
+    "香", 
+    ["99", "19"],
+    ["91", "11"],
+    "杏",
+    null
+);
 
+//keima, "knight"
+const 桂馬 = new Piece(
+    "桂", 
+    ["89", "29"],
+    ["81", "21"],
+    "圭",
+    null
+);
+
+//ginshou, "knight"
+const 銀將 = new Piece(
+    "銀", 
+    ["79", "39"],
+    ["71", "31"],
+    "全",
+    null
+);
+
+//kinshou, "knight"
+const 金將 = new Piece(
+    "金", 
+    ["69", "49"],
+    ["61", "41"],
+    null,
+    null
+);
+
+//oushou, "knight"
+const 王將 = new Piece(
+    "王", 
+    ["59"],
+    ["51"],
+    null,
+    null
+);
+
+const PIECES = [ 歩兵, 角行, 飛車, 香車, 桂馬, 銀將, 金將, 王將 ];
 const PROMOTED_PIECES = ['と', '馬', '龍', '杏', '圭', '全'];
-
-/*
-loops are designed to stop at edge of board, i.e. < 11, multiples of 10, or > 99
-*/ 
-
 
 function moveUp(currentPosition) {
     return currentPosition - 1;
@@ -207,6 +222,8 @@ function moveDownRight(currentPosition) {
 function slideUp(currentPosition) {
     let u = moveUp(currentPosition);
     const validMoves = [];
+    console.log(currentPosition);
+    console.log(u);
 
     while(u % 10 !== 0) {
         validMoves.push(u);
@@ -324,9 +341,9 @@ function slideDownRight(currentPosition) {
     return validMoves;
 }
 
-function fuMoves(color, position) {
+function fuMoves(position) {
     const origin = parseInt(position);
-    if(color === 'black') {
+    if(BOARD_STATE["player-turn"] === 'black') {
         return [
             origin - 1
         ];
@@ -385,19 +402,19 @@ function ryuuMoves(position) {
     return validMoves;
 }
 
-function kyouMoves(color, position) {
+function kyouMoves(position) {
     const origin = parseInt(position);
 
-    if(color === 'black') {
+    if(BOARD_STATE["player-turn"] === 'black') {
         return slideUp(origin);
     } else {
         return slideDown(origin);
     }
 }
 
-function keiMoves(color, position) {
+function keiMoves(position) {
     let origin = parseInt(position);
-    if(color === 'black') {
+    if(BOARD_STATE["player-turn"] === 'black') {
         //equivalent to moving up, up, left or up, up, right
         return [
             origin - 12,
@@ -412,9 +429,9 @@ function keiMoves(color, position) {
     }
 }
 
-function ginMoves(color, position) {
+function ginMoves(position) {
     let origin = parseInt(position);
-    if(color === 'black') {
+    if(BOARD_STATE["player-turn"] === 'black') {
         return [
             moveUp(origin),
             moveUpLeft(origin),
@@ -433,9 +450,9 @@ function ginMoves(color, position) {
     }
 }
 
-function kinMoves(color, position) {
+function kinMoves(position) {
     let origin = parseInt(position);
-    if(color === 'black') {
+    if(BOARD_STATE["player-turn"] === 'black') {
         return [
             moveUp(origin),
             moveUpLeft(origin),
@@ -493,7 +510,7 @@ function kingIsInCheck(lastMovedColor, lastMovedPiece, currentPosition) {
 }
 
 function isInPromotionZone(position, color) {
-    if(color === 'black') {
+    if(BOARD_STATE["player-turn"] === 'black') {
         return (
             position % 10 === 1 || position % 10 === 2 || position % 10 === 3
         )
@@ -510,26 +527,26 @@ function promote(thisPiece, position) {
     BOARD_STATE[position].piece = promoteTo;
 }
 
-function movementHandler(piece, color, square) {
+function movementHandler(piece, square) {
     switch(piece) {
         case '歩':
-            return fuMoves(color, square);
+            return fuMoves(square);
         case '角':
             return kakuMoves(square);
         case '飛':
             return hiMoves(square);
         case '香':
-            return kyouMoves(color, square);
+            return kyouMoves(square);
         case '桂':
-            return keiMoves(color, square);
+            return keiMoves(square);
         case '銀':
-            return ginMoves(color, square);
+            return ginMoves(square);
         case '金': 
         case 'と': 
         case '杏': 
         case '圭': 
         case '全':
-            return kinMoves(color, square);
+            return kinMoves(square);
         case '王': 
         case '玉':
             return ouMoves(square);

@@ -76,11 +76,12 @@ function displayCaptures(position) {
 
 function readyMove(position) {
     const validMoves = findValidMoves(position);
+
     highlightValidMoves(validMoves);
-    
     listenMove(position, validMoves);
 }
 
+//rework this
 function findValidMoves(square) {
     let validMoves = [];
     let possibleMoves = [];
@@ -88,7 +89,13 @@ function findValidMoves(square) {
     const thisPiece = BOARD_STATE[square].piece;
     const thisColor = BOARD_STATE[square].color;
 
-    validMoves = movementHandler(thisPiece, thisColor, square);
+    for(i=0; i<PIECES.length; i++) {
+        if(PIECES[i].displayName === thisPiece) {
+            console.log(PIECES[i].displayName);
+        }
+    }
+
+    validMoves = movementHandler(thisPiece, square);
 
     //make sure pieces are not blocked by own pieces or moving off the board
     validMoves.forEach(move => {
@@ -119,6 +126,7 @@ function movePiece(oldSquare, newSquare) {
     $(`#${newSquare}`).addClass('previous-move');
     
     if(BOARD_STATE[newSquare].piece) {
+        console.log("piece captured");
         capturePiece(BOARD_STATE[newSquare].piece, thisColor);
     }
 
@@ -126,6 +134,7 @@ function movePiece(oldSquare, newSquare) {
     updateBoard(newSquare, thisPiece, thisColor);
 
     if(isInPromotionZone(newSquare, thisColor)) {
+        console.log('being promoted');
         //need to clean these up first
         //promptPromotion();
         //listenPromotion(thisPiece, newSquare);
@@ -133,9 +142,11 @@ function movePiece(oldSquare, newSquare) {
         promote(thisPiece, newSquare);
     }
 
-    if(kingIsInCheck(thisColor, thisPiece, newSquare)) {
-        check();
-    }
+    //BUGGIN
+    // if(kingIsInCheck(thisColor, thisPiece, newSquare)) {
+    //     console.log('king in check');
+    //     check();
+    // }
 
     updateHTML();
     thisColor === 'black' ? listenWhite() : listenBlack();
@@ -193,6 +204,8 @@ function listenMove(square, validMoves) {
 }
 
 function listenBlack() {
+    BOARD_STATE["player-turn"] = "black";
+
     $('.white.piece').off('click');
     $('.black.piece').on('click', (e) => {
         selectPiece(e.currentTarget);
@@ -200,6 +213,8 @@ function listenBlack() {
 }
 
 function listenWhite() {
+    BOARD_STATE["player-turn"] = "white";
+
     $('.black.piece').off('click');
     $('.white.piece').on('click', (e) => {
         selectPiece(e.currentTarget);
